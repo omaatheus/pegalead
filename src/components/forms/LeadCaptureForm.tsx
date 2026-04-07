@@ -15,7 +15,7 @@ const leadSchema = z.object({
   email: z.string().email('Insira um e-mail corporativo válido.'),
   phone: z.string().min(10, 'Insira um telefone válido.'),
   company: z.string().min(2, 'O nome da empresa é obrigatório.'),
-  cnpj: z.string().min(14, 'Insira um CNPJ válido.'), 
+  identifier: z.string().min(14, 'Insira um CNPJ válido.'), 
   selectedAnalytics: z.array(z.string()).min(1, 'Selecione pelo menos um analítico para testar.'),
 });
 
@@ -25,13 +25,15 @@ export default function LeadCaptureForm() {
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<ApiResponse | null>(null);
   const [errors, setErrors] = useState<FormErrors>({}); 
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [copiedField, setCopiedField] = useState<'user' | 'password' | 'link' | null>(null);
   
   const [formData, setFormData] = useState<LeadFormData>({
     name: '',
     email: '',
     phone: '',
     company: '',
-    cnpj: '',
+    identifier: '',
     selectedAnalytics: [],
   });
 
@@ -69,58 +71,136 @@ export default function LeadCaptureForm() {
     }
 
     setErrors({});
+    setApiError(null); 
     setLoading(true);
 
     try {
       const resposta = await GenerateTestAccess(result.data as LeadFormData);
       setResultado(resposta);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao gerar acesso", error);
+
+      if (error.isApiValidationError) {
+        const apiErrors = error.fields;
+        
+        setErrors({
+          email: apiErrors.email,
+          identifier: apiErrors.identifier, 
+          company: apiErrors.company_name, 
+          phone: apiErrors.phone || apiErrors.company_phone,
+        });
+      } else {
+        setApiError(error.message || "Não foi possível gerar o acesso. Tente novamente.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCopy = (text: string, field: 'user' | 'password' | 'link') => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => {
+      setCopiedField(null);
+    }, 2000);
+  };
+
   if (resultado?.sucess && resultado.credentials) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 bg-emerald-900/10 border border-emerald-500/20 rounded-xl text-center backdrop-blur-sm animate-in fade-in zoom-in duration-500">
-        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 mb-6 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
-          <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex flex-col items-center justify-center p-4 sm:p-8 w-full bg-emerald-900/10 border border-emerald-500/20 rounded-xl text-center backdrop-blur-sm animate-in fade-in zoom-in duration-500">
+        <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/20 mb-4 sm:mb-6 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+          <svg className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
 
-        <h2 className="text-2xl font-bold text-emerald-400 mb-2">Acesso Gerado com Sucesso!</h2>
-        <p className="mb-6 text-slate-300">Utilize as credenciais abaixo para acessar a plataforma.</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-2">Acesso Gerado com Sucesso!</h2>
+        <p className="mb-6 text-sm sm:text-base text-slate-300">Utilize as credenciais abaixo para acessar a plataforma.</p>
         
-        <div className="bg-[#060d1a]/80 p-6 rounded-lg border border-slate-700/50 text-left w-full max-w-sm shadow-inner">
-          <div className="mb-4">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Acesse o Link</span>
-            <a href={resultado.credentials.acessLink} className="text-[#FACC15] font-medium hover:text-yellow-300 hover:underline transition-colors break-all">
+        <div className="bg-[#060d1a]/80 p-4 sm:p-6 rounded-lg border border-slate-700/50 text-left w-full max-w-md shadow-inner">
+          
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-1">
+               <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">Acesse o Link</span>
+            </div>
+            <a href={resultado.credentials.acessLink} target="_blank" className="text-[#FACC15] text-sm sm:text-base font-medium hover:text-yellow-300 hover:underline transition-colors break-all">
               {resultado.credentials.acessLink}
             </a>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="flex flex-col gap-4">
+            
+            {/* Bloco do Usuário */}
             <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Usuário</span>
-              <div className="bg-slate-800/50 px-3 py-2 rounded border border-slate-700/50">
-                <strong className="text-slate-100 font-mono text-sm">{resultado.credentials.user}</strong>
+              <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Usuário</span>
+              <div className="bg-slate-800/50 p-2.5 sm:px-3 sm:py-2.5 rounded border border-slate-700/50 flex items-center justify-between gap-2">
+                <div className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  <strong className="text-slate-100 font-mono text-[13px] sm:text-sm whitespace-nowrap">
+                    {resultado.credentials.user}
+                  </strong>
+                </div>
+                <button 
+                  onClick={() => handleCopy(resultado.credentials.user, 'user')}
+                  className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 rounded-md hover:bg-slate-700/50 shrink-0 cursor-pointer"
+                  title="Copiar usuário"
+                >
+                  {copiedField === 'user' ? (
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
+
+            {/* Bloco da Senha */}
             <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Senha</span>
-              <div className="bg-slate-800/50 px-3 py-2 rounded border border-slate-700/50">
-                <strong className="text-slate-100 font-mono text-sm">{resultado.credentials.password}</strong>
+              <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Senha</span>
+              <div className="bg-slate-800/50 p-2.5 sm:px-3 sm:py-2.5 rounded border border-slate-700/50 flex items-center justify-between gap-2">
+                <div className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  <strong className="text-slate-100 font-mono text-[13px] sm:text-sm whitespace-nowrap">
+                    {resultado.credentials.password}
+                  </strong>
+                </div>
+                <button 
+                  onClick={() => handleCopy(resultado.credentials.password, 'password')}
+                  className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 rounded-md hover:bg-slate-700/50 shrink-0 cursor-pointer"
+                  title="Copiar senha"
+                >
+                  {copiedField === 'password' ? (
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
+
           </div>
         </div>
       </div>
     );
   }
 
+  // O restante do componente (formulário) continua igual
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full mx-auto" noValidate>
+      {apiError && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 animate-in fade-in">
+          <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm text-red-400 font-medium">{apiError}</p>
+        </div>
+      )}
       
       <div className="space-y-5">
         <h2 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
@@ -166,11 +246,11 @@ export default function LeadCaptureForm() {
           />
           <Input 
             label="CNPJ" 
-            name="cnpj" 
+            name="identifier" 
             type="text" 
-            value={formData.cnpj} 
+            value={formData.identifier} 
             onChange={handleInputChange} 
-            error={errors.cnpj?.[0]}
+            error={errors.identifier?.[0]}
           />
         </div>
       </div>

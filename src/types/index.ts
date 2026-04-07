@@ -3,16 +3,40 @@ export interface LeadFormData {
   email: string;
   phone: string;
   company: string;
-  cnpj: string;
+  identifier: string;
   selectedAnalytics: string[];
 }
 
 export interface ApiResponse {
   sucess: boolean;
-  credentials?: {
+  credentials: {
     user: string;
     password: string;
     acessLink: string;
   };
   error?: string;
+}
+
+
+export interface CompanyData {
+  admin_name: string;
+  company_name: string;
+  company_phone: string;
+  email: string;
+  global_plan_id: number;
+  identifier: string;
+  password: string;
+  password_confirmation: string;
+  personType: "legal" | "string";
+  phone: string;
+  status: "activated" | string; 
+  timezone: string;
+  expired_at: Number | null;
+
+  address?: string;
+  cep?: string;
+  city?: string;
+  complement?: string;
+  district?: string;
+  number?: string;
 }
