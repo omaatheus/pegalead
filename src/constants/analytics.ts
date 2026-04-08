@@ -10,4 +10,10 @@ export const ANALYTICS_OPTIONS = [
   { id: 'facial_panic', label: 'Pânico facial' },
   { id: 'lpr', label: 'LPR - placa de veículos' },
   { id: 'radar', label: 'Radar de velocidade' },
+  { id: 'face_recognition', label: 'Reconhecimento facial' },
+  { id: 'epi_detection', label: 'Detecção de EPI' },
+  { id: 'epi_ausence', label: 'Ausência de EPI' },
+  { id: 'scene_change', label: 'Mudança de cena' },
+  { id: 'timelapse', label: 'Timelapse' },
+
 ];
