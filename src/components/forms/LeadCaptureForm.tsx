@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { z } from 'zod';
+import Link from 'next/link'; // Não esqueça de adicionar este import
 import { ANALYTICS_OPTIONS } from '@/constants/analytics';
 import { GenerateTestAccess } from '@/services/api/api';
 import { LeadFormData, ApiResponse } from '@/types';
@@ -11,6 +12,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { Button } from '@/components/ui/Button';
 
 import { getTranslatedFieldError } from '@/utils/errorMapper';
+import { SocialButton } from '../ui/SocialButton';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'O nome completo é obrigatório.'),
@@ -112,8 +114,8 @@ export default function LeadCaptureForm() {
 
   if (resultado?.sucess && resultado.credentials) {
     return (
-      
       <div className="flex flex-col items-center justify-center p-4 sm:p-8 w-full bg-emerald-900/10 border border-emerald-500/20 rounded-xl text-center backdrop-blur-sm animate-in fade-in zoom-in duration-500">
+        
         <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/20 mb-4 sm:mb-6 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
           <svg className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -121,10 +123,11 @@ export default function LeadCaptureForm() {
         </div>
 
         <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-2">Acesso Gerado com Sucesso!</h2>
-        <p className="mb-6 text-sm sm:text-base text-slate-300">Abaixo estão as credenciais para acessar seu ambiente de teste exclusivo. Seu teste terá acesso completo aos analíticos selecionados por 7 dias. Aproveite para explorar e descobrir insights valiosos para o seu negócio!</p>
+        <p className="mb-6 text-sm sm:text-base text-slate-300">
+          Abaixo estão as credenciais para acessar seu ambiente de teste exclusivo. Seu teste terá acesso completo aos analíticos selecionados por 7 dias. Aproveite para explorar e descobrir insights valiosos para o seu negócio!
+        </p>
         
         <div className="bg-[#060d1a]/80 p-4 sm:p-6 rounded-lg border border-slate-700/50 text-left w-full max-w-md shadow-inner">
-          
           <div className="mb-5">
             <div className="flex items-center justify-between mb-1">
                <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">Acesse o Link</span>
@@ -135,7 +138,6 @@ export default function LeadCaptureForm() {
           </div>
 
           <div className="flex flex-col gap-4">
-            
             <div>
               <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Usuário</span>
               <div className="bg-slate-800/50 p-2.5 sm:px-3 sm:py-2.5 rounded border border-slate-700/50 flex items-center justify-between gap-2">
@@ -187,7 +189,43 @@ export default function LeadCaptureForm() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
 
+        <div className="mt-8 pt-6 border-t border-emerald-500/20 w-full flex flex-col items-center">
+          <p className="mb-4 text-sm font-medium text-slate-300">
+            Acompanhe a Zions Vision e fique por dentro das últimas inovações:
+          </p>
+          <div className="flex items-center gap-4">
+            <SocialButton ariaLabel='Acessar Instagram' svg={<svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="w-5 h-5 transition-transform group-hover:scale-110"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>} href='https://instagram.com/zions.vision/' />
+            
+            <SocialButton ariaLabel='Acessar LinkedIn' svg={<svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="w-5 h-5 transition-transform group-hover:scale-110"
+              >
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                <rect x="2" y="9" width="4" height="12"></rect>
+                <circle cx="4" cy="4" r="2"></circle>
+              </svg>} href='https://www.linkedin.com/company/zionsvision/' />
           </div>
         </div>
       </div>
@@ -196,111 +234,111 @@ export default function LeadCaptureForm() {
 
   return (
     <>
-    <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-50 mb-4 tracking-tight">
-            Teste Nossa Plataforma
-          </h1>
-          <p className="text-base text-slate-300 leading-relaxed">
-            Preencha os dados abaixo para gerar seu acesso exclusivo e testar nossos analíticos de vídeo na prática.
-          </p>
-        </div>
-    
-    <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full mx-auto" noValidate>
-      {apiError && (
-        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 animate-in fade-in">
-          <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-sm text-red-400 font-medium">{apiError}</p>
-        </div>
-      )}
-      
-      <div className="space-y-5">
-        <h2 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
-          Insira seus dados
-        </h2>
-        
-        <Input 
-          label="Nome completo" 
-          name="name" 
-          type="text" 
-          value={formData.name} 
-          onChange={handleInputChange} 
-          error={errors.name?.[0]} 
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
-          <Input 
-            label="E-mail de contato" 
-            name="email" 
-            type="email" 
-            value={formData.email} 
-            onChange={handleInputChange} 
-            error={errors.email?.[0]}
-          />
-          <Input 
-            label="Telefone / WhatsApp" 
-            name="phone" 
-            type="tel" 
-            value={formData.phone} 
-            onChange={handleInputChange} 
-            error={errors.phone?.[0]}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
-          <Input 
-            label="Empresa" 
-            name="company" 
-            type="text" 
-            value={formData.company} 
-            onChange={handleInputChange} 
-            error={errors.company?.[0]}
-          />
-          <Input 
-            label="CNPJ" 
-            name="identifier" 
-            type="text" 
-            value={formData.identifier} 
-            onChange={handleInputChange} 
-            error={errors.identifier?.[0]}
-          />
-        </div>
+      <div className="text-center mb-8">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-50 mb-4 tracking-tight">
+          Teste Nossa Plataforma
+        </h1>
+        <p className="text-base text-slate-300 leading-relaxed">
+          Preencha os dados abaixo para gerar seu acesso exclusivo e testar nossos analíticos de vídeo na prática.
+        </p>
       </div>
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
-          Analíticos de interesse
-        </h3>
-        
-        {errors.selectedAnalytics && (
-          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 animate-in fade-in">
-            <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      
+      <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full mx-auto" noValidate>
+        {apiError && (
+          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 animate-in fade-in">
+            <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-sm text-red-400 font-medium">{errors.selectedAnalytics[0]}</p>
+            <p className="text-sm text-red-400 font-medium">{apiError}</p>
           </div>
         )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
-          {ANALYTICS_OPTIONS.map((analitico) => (
-            <Checkbox
-              key={analitico.id}
-              name={analitico.id}
-              label={analitico.label}
-              checked={formData.selectedAnalytics.includes(analitico.id)}
-              onChange={() => handleCheckboxChange(analitico.id)}
+        
+        <div className="space-y-5">
+          <h2 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
+            Insira seus dados
+          </h2>
+          
+          <Input 
+            label="Nome completo" 
+            name="name" 
+            type="text" 
+            value={formData.name} 
+            onChange={handleInputChange} 
+            error={errors.name?.[0]} 
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
+            <Input 
+              label="E-mail de contato" 
+              name="email" 
+              type="email" 
+              value={formData.email} 
+              onChange={handleInputChange} 
+              error={errors.email?.[0]}
             />
-          ))}
-        </div>
-      </div>
+            <Input 
+              label="Telefone / WhatsApp" 
+              name="phone" 
+              type="tel" 
+              value={formData.phone} 
+              onChange={handleInputChange} 
+              error={errors.phone?.[0]}
+            />
+          </div>
 
-      <div className="pt-4">
-        <Button type="submit" isLoading={loading}>
-          Testar Plataforma Agora
-        </Button>
-      </div>
-    </form>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
+            <Input 
+              label="Empresa" 
+              name="company" 
+              type="text" 
+              value={formData.company} 
+              onChange={handleInputChange} 
+              error={errors.company?.[0]}
+            />
+            <Input 
+              label="CNPJ" 
+              name="identifier" 
+              type="text" 
+              value={formData.identifier} 
+              onChange={handleInputChange} 
+              error={errors.identifier?.[0]}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
+            Analíticos de interesse
+          </h3>
+          
+          {errors.selectedAnalytics && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 animate-in fade-in">
+              <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <p className="text-sm text-red-400 font-medium">{errors.selectedAnalytics[0]}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
+            {ANALYTICS_OPTIONS.map((analitico) => (
+              <Checkbox
+                key={analitico.id}
+                name={analitico.id}
+                label={analitico.label}
+                checked={formData.selectedAnalytics.includes(analitico.id)}
+                onChange={() => handleCheckboxChange(analitico.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="pt-4">
+          <Button type="submit" isLoading={loading}>
+            Testar Plataforma Agora
+          </Button>
+        </div>
+      </form>
     </>
   );
 }
