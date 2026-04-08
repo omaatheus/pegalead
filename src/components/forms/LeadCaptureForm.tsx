@@ -13,13 +13,14 @@ import { Button } from '@/components/ui/Button';
 
 import { getTranslatedFieldError } from '@/utils/errorMapper';
 import { SocialButton } from '../ui/SocialButton';
+import { maskCNPJ, maskPhone } from '@/utils/masks';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'O nome completo é obrigatório.'),
   email: z.string().email('Insira um e-mail corporativo válido.'),
-  phone: z.string().min(10, 'Insira um telefone válido.'),
+  phone: z.string().min(14, 'Insira um telefone válido.'),
   company: z.string().min(2, 'O nome da empresa é obrigatório.'),
-  identifier: z.string().min(14, 'Insira um CNPJ válido.'), 
+  identifier: z.string().length(18, 'Insira um CNPJ válido.'),
   selectedAnalytics: z.array(z.string()).min(1, 'Selecione pelo menos um analítico para testar.'),
 });
 
@@ -42,7 +43,14 @@ export default function LeadCaptureForm() {
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+
+    if (name === 'phone') {
+        value = maskPhone(value);
+      } else if (name === 'identifier') {
+        value = maskCNPJ(value);
+      }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));

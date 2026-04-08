@@ -20,7 +20,7 @@ export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Prom
 
     const companyData: CompanyData = {
       admin_name: data.name,
-      phone:  data.phone,
+      phone:  "+55 " + data.phone,
       company_name: data.company,
       company_phone: data.company_phone,
       email: data.email,
