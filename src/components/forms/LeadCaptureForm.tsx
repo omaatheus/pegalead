@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/Input';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Button } from '@/components/ui/Button';
 
+import { getTranslatedFieldError } from '@/utils/errorMapper';
+
 const leadSchema = z.object({
   name: z.string().min(3, 'O nome completo é obrigatório.'),
   email: z.string().email('Insira um e-mail corporativo válido.'),
@@ -65,8 +67,7 @@ export default function LeadCaptureForm() {
     const result = leadSchema.safeParse(formData);
     
     if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
-      setErrors(fieldErrors);
+      setErrors(result.error.flatten().fieldErrors);
       return; 
     }
 
@@ -76,22 +77,26 @@ export default function LeadCaptureForm() {
 
     try {
       const resposta = await GenerateTestAccess(result.data as LeadFormData);
-      setResultado(resposta);
+      
+      if (resposta.sucess) {
+        setResultado(resposta);
+      } else {
+        if (resposta.isApiValidationError) {
+          const apiErrors = resposta.fields;
+          
+          setErrors({
+            email: getTranslatedFieldError(apiErrors.email),
+            company: getTranslatedFieldError(apiErrors.company_name),
+            identifier: getTranslatedFieldError(apiErrors.identifier) || getTranslatedFieldError(apiErrors.company_name), 
+            phone: getTranslatedFieldError(apiErrors.phone) || getTranslatedFieldError(apiErrors.company_phone),
+          });
+        } else {
+          setApiError(resposta.message || "Não foi possível processar sua solicitação no momento.");
+        }
+      }
     } catch (error: any) {
       console.error("Erro ao gerar acesso", error);
-
-      if (error.isApiValidationError) {
-        const apiErrors = error.fields;
-        
-        setErrors({
-          email: apiErrors.email,
-          identifier: apiErrors.identifier, 
-          company: apiErrors.company_name, 
-          phone: apiErrors.phone || apiErrors.company_phone,
-        });
-      } else {
-        setApiError(error.message || "Não foi possível gerar o acesso. Tente novamente.");
-      }
+      setApiError("Erro de comunicação com o servidor. Verifique sua conexão.");
     } finally {
       setLoading(false);
     }
@@ -107,6 +112,7 @@ export default function LeadCaptureForm() {
 
   if (resultado?.sucess && resultado.credentials) {
     return (
+      
       <div className="flex flex-col items-center justify-center p-4 sm:p-8 w-full bg-emerald-900/10 border border-emerald-500/20 rounded-xl text-center backdrop-blur-sm animate-in fade-in zoom-in duration-500">
         <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/20 mb-4 sm:mb-6 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
           <svg className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +121,7 @@ export default function LeadCaptureForm() {
         </div>
 
         <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-2">Acesso Gerado com Sucesso!</h2>
-        <p className="mb-6 text-sm sm:text-base text-slate-300">Utilize as credenciais abaixo para acessar a plataforma.</p>
+        <p className="mb-6 text-sm sm:text-base text-slate-300">Abaixo estão as credenciais para acessar seu ambiente de teste exclusivo. Seu teste terá acesso completo aos analíticos selecionados por 7 dias. Aproveite para explorar e descobrir insights valiosos para o seu negócio!</p>
         
         <div className="bg-[#060d1a]/80 p-4 sm:p-6 rounded-lg border border-slate-700/50 text-left w-full max-w-md shadow-inner">
           
@@ -130,7 +136,6 @@ export default function LeadCaptureForm() {
 
           <div className="flex flex-col gap-4">
             
-            {/* Bloco do Usuário */}
             <div>
               <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Usuário</span>
               <div className="bg-slate-800/50 p-2.5 sm:px-3 sm:py-2.5 rounded border border-slate-700/50 flex items-center justify-between gap-2">
@@ -157,7 +162,6 @@ export default function LeadCaptureForm() {
               </div>
             </div>
 
-            {/* Bloco da Senha */}
             <div>
               <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Senha</span>
               <div className="bg-slate-800/50 p-2.5 sm:px-3 sm:py-2.5 rounded border border-slate-700/50 flex items-center justify-between gap-2">
@@ -190,8 +194,17 @@ export default function LeadCaptureForm() {
     );
   }
 
-  // O restante do componente (formulário) continua igual
   return (
+    <>
+    <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-50 mb-4 tracking-tight">
+            Teste Nossa Plataforma
+          </h1>
+          <p className="text-base text-slate-300 leading-relaxed">
+            Preencha os dados abaixo para gerar seu acesso exclusivo e testar nossos analíticos de vídeo na prática.
+          </p>
+        </div>
+    
     <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full mx-auto" noValidate>
       {apiError && (
         <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 animate-in fade-in">
@@ -204,11 +217,11 @@ export default function LeadCaptureForm() {
       
       <div className="space-y-5">
         <h2 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
-          Dados do Lead
+          Insira seus dados
         </h2>
         
         <Input 
-          label="Nome Completo" 
+          label="Nome completo" 
           name="name" 
           type="text" 
           value={formData.name} 
@@ -218,7 +231,7 @@ export default function LeadCaptureForm() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
           <Input 
-            label="E-mail Corporativo" 
+            label="E-mail de contato" 
             name="email" 
             type="email" 
             value={formData.email} 
@@ -257,7 +270,7 @@ export default function LeadCaptureForm() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
-          Analíticos de Interesse
+          Analíticos de interesse
         </h3>
         
         {errors.selectedAnalytics && (
@@ -288,5 +301,6 @@ export default function LeadCaptureForm() {
         </Button>
       </div>
     </form>
+    </>
   );
 }

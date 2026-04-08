@@ -8,10 +8,6 @@ export async function loginSuperAdmin() {
 
     try {
 
-        console.log("email: "+ env.superadminUser );
-        console.log("password: "+ env.superadminPassword );
-        
-
         const formData = new URLSearchParams();
         formData.append("email", env.superadminUser);
         formData.append("password", env.superadminPassword);

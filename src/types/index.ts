@@ -7,15 +7,25 @@ export interface LeadFormData {
   selectedAnalytics: string[];
 }
 
-export interface ApiResponse {
-  sucess: boolean;
-  credentials: {
-    user: string;
-    password: string;
-    acessLink: string;
-  };
-  error?: string;
-}
+export type ApiResponse = 
+  | {
+      sucess: true;
+      credentials: {
+        user: string;
+        password: string;
+        acessLink: string;
+      };
+    }
+  | {
+      sucess: false;
+      isApiValidationError: true;
+      fields: Record<string, string[]>; 
+    }
+  | {
+      sucess: false;
+      isApiValidationError?: false;
+      message: string;
+    };
 
 
 export interface CompanyData {

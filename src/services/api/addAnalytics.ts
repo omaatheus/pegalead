@@ -3,13 +3,14 @@
 import axios from "axios";
 import { env } from "@/config/env";
 
-export async function addAnalytics() {
+export async function addAnalytics(selectedAnalytics: string[]) {
 
     const apiUrl = `https://${env.heimdallSubdomain}.heimdallcloud.com.br/api/store_company_user`;
     const appUrl = `${env.heimdallSubdomain}.heimdallcloud.com.br`;
 
     try {
         
+    
         
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.data?.errors) {

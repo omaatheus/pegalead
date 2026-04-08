@@ -15,5 +15,4 @@ export const ANALYTICS_OPTIONS = [
   { id: 'epi_ausence', label: 'Ausência de EPI' },
   { id: 'scene_change', label: 'Mudança de cena' },
   { id: 'timelapse', label: 'Timelapse' },
-
 ];

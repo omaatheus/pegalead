@@ -60,9 +60,8 @@ export default function WhatsAppContactForm() {
       const textToSend = `*Nome:* ${formData.name}\n*Empresa:* ${formData.company}\n${cnpjLine}\n\n*Mensagem:* ${formData.message}`;
         
       const encodedMessage = encodeURIComponent(textToSend);
-      
-      // const WHATSAPP_NUMBER = "5519920036598"; 
-      const WHATSAPP_NUMBER = "5519982349298"; 
+       
+      const WHATSAPP_NUMBER = "551151943960"; 
       
       const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
       
