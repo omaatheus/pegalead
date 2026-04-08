@@ -5,8 +5,10 @@ import { loginSuperAdmin } from "./loginSuperAdmin";
 import { createCompany } from "./createCompany";
 import { CompanyData } from "@/types";
 import { env } from "@/config/env";
+import { addAnalytics } from "./addAnalytics";
+import { log } from "console";
 
-export const GenerateTestAccess = async (data: LeadFormData): Promise<ApiResponse> => {
+export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Promise<ApiResponse> => {
   try {
     const loginResponse = await loginSuperAdmin();
 
@@ -20,7 +22,7 @@ export const GenerateTestAccess = async (data: LeadFormData): Promise<ApiRespons
       admin_name: data.name,
       phone:  data.phone,
       company_name: data.company,
-      company_phone: data.phone,
+      company_phone: data.company_phone,
       email: data.email,
       global_plan_id: 1,
       identifier: data.identifier,
@@ -32,7 +34,11 @@ export const GenerateTestAccess = async (data: LeadFormData): Promise<ApiRespons
       expired_at: 7
     };
 
-    await createCompany(companyData, loginResponse.token);
+    let resCreateCompany = await createCompany(companyData, loginResponse.token);
+
+    data.company_id = resCreateCompany.data.company_id;
+
+    await addAnalytics(data, loginResponse.token);
 
     return new Promise((resolve) => {
       setTimeout(() => {

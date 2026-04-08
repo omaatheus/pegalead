@@ -5,7 +5,7 @@ import { z } from 'zod';
 import Link from 'next/link'; // Não esqueça de adicionar este import
 import { ANALYTICS_OPTIONS } from '@/constants/analytics';
 import { GenerateTestAccess } from '@/services/api/api';
-import { LeadFormData, ApiResponse } from '@/types';
+import { LeadFormData, ApiResponse, CompanyData } from '@/types';
 
 import { Input } from '@/components/ui/Input';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -78,7 +78,7 @@ export default function LeadCaptureForm() {
     setLoading(true);
 
     try {
-      const resposta = await GenerateTestAccess(result.data as LeadFormData);
+      const resposta = await GenerateTestAccess(result.data as LeadFormData & CompanyData);
       
       if (resposta.sucess) {
         setResultado(resposta);

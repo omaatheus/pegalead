@@ -29,6 +29,7 @@ export type ApiResponse =
 
 
 export interface CompanyData {
+  company_id?: number;
   admin_name: string;
   company_name: string;
   company_phone: string;
@@ -49,4 +50,69 @@ export interface CompanyData {
   complement?: string;
   district?: string;
   number?: string;
+
 }
+
+type HeimdallAnalyticPermission = {
+  name: string;
+  active: boolean;
+};
+
+export type HeimdallFeaturesPermission = HeimdallAnalyticPermission;
+
+type HeimdallAnalyticPlan = {
+  analytic: {
+    lpr: HeimdallAnalyticPermission;
+    panic: HeimdallAnalyticPermission;
+    radar: HeimdallAnalyticPermission;
+    evasion: HeimdallAnalyticPermission;
+    intrusion: HeimdallAnalyticPermission;
+    inactivity: HeimdallAnalyticPermission;
+    permanence: HeimdallAnalyticPermission;
+    agglomeration: HeimdallAnalyticPermission;
+    vehicle_evasion: HeimdallAnalyticPermission;
+    animal_intrusion: HeimdallAnalyticPermission;
+    vehicle_intrusion: HeimdallAnalyticPermission;
+    vehicle_agglomeration: HeimdallAnalyticPermission;
+    epi_intrusion: HeimdallAnalyticPermission;
+    epi_evasion: HeimdallAnalyticPermission;
+    scene_change: HeimdallAnalyticPermission;
+    time_lapse: HeimdallAnalyticPermission;
+    facial_recognition: HeimdallAnalyticPermission;
+    inactive_camera: HeimdallAnalyticPermission;
+  };
+  features?: {
+    cameraSharing: HeimdallFeaturesPermission;
+    vmsIntegration: HeimdallFeaturesPermission;
+    moniIntegration: HeimdallFeaturesPermission;
+    gearIntegration: HeimdallFeaturesPermission;
+  };
+};
+
+export interface HeimdallPlan {
+  id: number;
+  name: string;
+  company: { name: string; id: number };
+  max_number_logins: number;
+  permissions: HeimdallAnalyticPlan;
+  platform_routes: HeimdallPlatformRoutes;
+}
+
+export type HeimdallDynamicRoute = {
+  path: string;
+  index: boolean;
+  enabled: boolean;
+  children?: HeimdallDynamicRoute[];
+};
+
+type HeimdallRoutes = {
+  authRoutes: HeimdallDynamicRoute[];
+  mainRoutes: HeimdallDynamicRoute[];
+  monitoringRotues: HeimdallDynamicRoute[];
+};
+
+export type HeimdallPlatformRoutes = {
+  web: HeimdallRoutes;
+  mobile: HeimdallRoutes;
+};
+

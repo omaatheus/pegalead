@@ -26,8 +26,14 @@ export async function loginSuperAdmin() {
         return response.data;
 
     } catch (error) {
-        console.error('Erro ao enviar dados para o login do super admin:', error);
-        throw error;
+        if (axios.isAxiosError(error) && error.response?.data?.errors) {
+            throw { 
+                isApiValidationError: true, 
+                fields: error.response.data.errors 
+            };
+        }
+        
+        throw new Error("Ocorreu um erro inesperado ao conectar com o servidor.");
     }
 
 }
