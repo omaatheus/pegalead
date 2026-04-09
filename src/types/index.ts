@@ -5,6 +5,7 @@ export interface LeadFormData {
   company: string;
   identifier: string;
   selectedAnalytics: string[];
+  company_segment: string;
 }
 
 export type ApiResponse = 

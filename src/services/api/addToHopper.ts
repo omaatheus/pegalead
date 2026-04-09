@@ -1,7 +1,10 @@
+"use server";
+
 import { env } from "@/config/env";
 import { LeadFormData } from "@/types";
 import axios from "axios";
 import { ANALYTICS_OPTIONS } from "@/constants/analytics";
+import { COMPANY_OPTIONS } from "@/constants/typeCompany";
 
 export async function addToHopper(data: LeadFormData) {
 
@@ -15,6 +18,8 @@ export async function addToHopper(data: LeadFormData) {
         }
     });
 
+    const company_segment = COMPANY_OPTIONS.find(company => company.id === data.company_segment)?.label;
+
     const formData = {
         "columnId": "1dab67a6-a9c0-4bc9-b462-130ff7cff93c",
         "title": `${data.name} - ${data.company} - HEIMDALL AI`,
@@ -25,7 +30,7 @@ export async function addToHopper(data: LeadFormData) {
             "document": `${data.identifier}`,
             "empresa": `${data.company}`,
             "interesse": selectedAnalytics.join(", "),
-            "tipo_lead": "Central de Monitoramento",
+            "tipo_lead": company_segment,
             "origem": "Formulário de Leads - Zions"
         }
     }   

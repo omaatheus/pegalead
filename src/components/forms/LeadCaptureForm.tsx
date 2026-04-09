@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { getTranslatedFieldError } from '@/utils/errorMapper';
 import { SocialButton } from '../ui/SocialButton';
 import { maskCNPJ, maskPhone } from '@/utils/masks';
+import { COMPANY_OPTIONS } from '@/constants/typeCompany';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'O nome completo é obrigatório.'),
@@ -22,6 +23,7 @@ const leadSchema = z.object({
   company: z.string().min(2, 'O nome da empresa é obrigatório.'),
   identifier: z.string().length(18, 'Insira um CNPJ válido.'),
   selectedAnalytics: z.array(z.string()).min(1, 'Selecione pelo menos um analítico para testar.'),
+  company_segment: z.string().min(1, 'O segmento da empresa é obrigatório.'),
 });
 
 type FormErrors = z.inferFlattenedErrors<typeof leadSchema>['fieldErrors'];
@@ -40,6 +42,7 @@ export default function LeadCaptureForm() {
     company: '',
     identifier: '',
     selectedAnalytics: [],
+    company_segment: '',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,6 +73,19 @@ export default function LeadCaptureForm() {
       return { ...prev, selectedAnalytics: newAnalytics };
     });
   };
+
+  const handleSegmentChange = (id: string) => {
+  setFormData((prev) => {
+    const novoSegmento = prev.company_segment === id ? '' : id;
+    
+    if (novoSegmento && errors.company_segment) {
+      setErrors((prev) => ({ ...prev, company_segment: undefined }));
+    }
+
+    return { ...prev, company_segment: novoSegmento };
+  });
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,6 +327,33 @@ export default function LeadCaptureForm() {
               onChange={handleInputChange} 
               error={errors.identifier?.[0]}
             />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
+            Segmento da Empresa
+          </h3>
+          
+          {errors.company_segment && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 animate-in fade-in">
+              <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <p className="text-sm text-red-400 font-medium">{errors.company_segment}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
+            {COMPANY_OPTIONS.map((empresa) => (
+              <Checkbox
+                key={empresa.id}
+                name={empresa.id}
+                label={empresa.label}
+                checked={formData.company_segment === empresa.id}
+                onChange={() => handleSegmentChange(empresa.id)} 
+              />
+            ))}
           </div>
         </div>
 
