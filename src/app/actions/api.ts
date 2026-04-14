@@ -7,7 +7,7 @@ import { CompanyData } from "@/types";
 import { env } from "@/config/env";
 import { addAnalytics } from "./addAnalytics";
 import { addToHopper } from "./addToHopper";
-import { saveLeadsToStorage } from "./storage";
+import { deleteLeadFromStorage, saveLeadsToStorage } from "./storage";
 import { verifyIdentifier } from "@/utils/verifyIdentifier";
 
 export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Promise<ApiResponse> => {
@@ -68,6 +68,12 @@ export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Prom
 
   } catch (error: any) {
     console.error('Erro ao enviar dados: ', error);
+
+    try {
+      await deleteLeadFromStorage(data.identifier, data.email);
+    } catch (RollbackError) {
+      console.error("Falha ao realizar rollback no DB", RollbackError);
+    }
     
     if (error.isApiValidationError) {
       return {
