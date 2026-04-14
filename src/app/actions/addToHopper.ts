@@ -3,22 +3,15 @@
 import { env } from "@/config/env";
 import { LeadFormData } from "@/types";
 import axios from "axios";
-import { ANALYTICS_OPTIONS } from "@/constants/analytics";
-import { COMPANY_OPTIONS } from "@/constants/typeCompany";
+import { analyticsFormatter, companySegmentFormatter } from "@/utils/utils";
 
 export async function addToHopper(data: LeadFormData) {
 
     const apiUrl = env.commandUrl;
 
-    const selectedAnalytics: string[] = data.selectedAnalytics;
+    const selectedAnalytics: string[] = analyticsFormatter(data.selectedAnalytics);
 
-    selectedAnalytics.forEach((analytic, i) => {
-        if( ANALYTICS_OPTIONS.find(opt => opt.id === analytic)){
-            selectedAnalytics[i] = ANALYTICS_OPTIONS.find(opt => opt.id === analytic)?.label || analytic;
-        }
-    });
-
-    const company_segment = COMPANY_OPTIONS.find(company => company.id === data.company_segment)?.label;
+    const company_segment = companySegmentFormatter(data.company_segment);
 
     const formData = {
         "columnId": "1dab67a6-a9c0-4bc9-b462-130ff7cff93c",

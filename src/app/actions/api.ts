@@ -8,9 +8,12 @@ import { env } from "@/config/env";
 import { addAnalytics } from "./addAnalytics";
 import { addToHopper } from "./addToHopper";
 import { saveLeadsToStorage } from "./storage";
+import { verifyIdentifier } from "@/utils/verifyIdentifier";
 
 export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Promise<ApiResponse> => {
   try {
+
+    verifyIdentifier(data.identifier);
 
     const password = Math.random().toString(36).slice(-8);
 
@@ -36,19 +39,19 @@ export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Prom
       throw new Error("Falha ao salvar lead no banco de dados.");
     }
 
-    //const loginResponse = await loginSuperAdmin();
+    const loginResponse = await loginSuperAdmin();
 
-    //if (!loginResponse) {
-      //throw new Error('Falha ao obter credenciais do super admin');
-    //}
+    if (!loginResponse) {
+      throw new Error('Falha ao obter credenciais do super admin');
+    }
 
-    //let resCreateCompany = await createCompany(companyData, loginResponse.token);
+    let resCreateCompany = await createCompany(companyData, loginResponse.token);
 
-    //data.company_id = resCreateCompany.data.company_id;
+    data.company_id = resCreateCompany.data.company_id;
 
-    //await addAnalytics(data, loginResponse.token);
+    await addAnalytics(data, loginResponse.token);
 
-    //await addToHopper(data);
+    await addToHopper(data);
 
     return new Promise((resolve) => {
       setTimeout(() => {
