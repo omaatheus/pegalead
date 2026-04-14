@@ -115,6 +115,7 @@ export default function LeadCaptureForm() {
             company: getTranslatedFieldError(apiErrors.company_name),
             identifier: getTranslatedFieldError(apiErrors.identifier) || getTranslatedFieldError(apiErrors.company_name), 
             phone: getTranslatedFieldError(apiErrors.phone) || getTranslatedFieldError(apiErrors.company_phone),
+            name: getTranslatedFieldError(apiErrors.name),
           });
         } else {
           setApiError(resposta.message || "Não foi possível processar sua solicitação no momento.");
