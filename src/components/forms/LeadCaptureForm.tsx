@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { z } from 'zod';
-import Link from 'next/link'; // Não esqueça de adicionar este import
+import Link from 'next/link';
 import { ANALYTICS_OPTIONS } from '@/constants/analytics';
-import { GenerateTestAccess } from '@/services/api/api';
+import { GenerateTestAccess } from '@/app/actions/api';
 import { LeadFormData, ApiResponse, CompanyData } from '@/types';
 
 import { Input } from '@/components/ui/Input';

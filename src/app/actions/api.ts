@@ -7,14 +7,13 @@ import { CompanyData } from "@/types";
 import { env } from "@/config/env";
 import { addAnalytics } from "./addAnalytics";
 import { addToHopper } from "./addToHopper";
+import { saveLeadsToStorage } from "./storage";
+import { verifyIdentifier } from "@/utils/verifyIdentifier";
 
 export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Promise<ApiResponse> => {
   try {
-    const loginResponse = await loginSuperAdmin();
 
-    if (!loginResponse) {
-      throw new Error('Falha ao obter credenciais do super admin');
-    }
+    verifyIdentifier(data.identifier);
 
     const password = Math.random().toString(36).slice(-8);
 
@@ -33,6 +32,18 @@ export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Prom
       timezone: "America/Sao_Paulo",
       expired_at: 7
     };
+
+    const savedInStorage = await saveLeadsToStorage(data);
+
+    if(!savedInStorage.success){
+      throw new Error("Falha ao salvar lead no banco de dados.");
+    }
+
+    const loginResponse = await loginSuperAdmin();
+
+    if (!loginResponse) {
+      throw new Error('Falha ao obter credenciais do super admin');
+    }
 
     let resCreateCompany = await createCompany(companyData, loginResponse.token);
 
