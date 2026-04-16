@@ -9,6 +9,7 @@ import { addAnalytics } from "./addAnalytics";
 import { addToHopper } from "./addToHopper";
 import { deleteLeadFromStorage, saveLeadsToStorage } from "./storage";
 import { verifyIdentifier } from "@/utils/verifyIdentifier";
+import { sendMail } from "./sendMail";
 
 export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Promise<ApiResponse> => {
   try {
@@ -38,6 +39,8 @@ export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Prom
     if(!savedInStorage.success){
       throw new Error("Falha ao salvar lead no banco de dados.");
     }
+
+    await sendMail(data, password);
 
     const loginResponse = await loginSuperAdmin();
 

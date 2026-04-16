@@ -3,5 +3,14 @@ export const env = {
     superadminUser: process.env.NEXT_PUBLIC_SUPERADMIN_USER || "",
     superadminPassword: process.env.NEXT_PUBLIC_SUPERADMIN_PASSWORD || "",
     commandToken: process.env.NEXT_PUBLIC_COMMAND_TOKEN || "",
-    commandUrl: process.env.NEXT_PUBLIC_COMMAND_URL || ""
+    commandUrl: process.env.NEXT_PUBLIC_COMMAND_URL || "",
+    mailMailer: process.env.MAIL_MAILER || "",
+    mailHost: process.env.MAIL_HOST || "",
+    mailPort: process.env.MAIL_PORT || "",
+    mailUsername: process.env.MAIL_USERNAME || "",
+    mailPassword: process.env.MAIL_PASSWORD || "",
+    mailFromAddress: "smtp@zionstech.com.br",
+    mailFromName: "Zions Vision",
+    mailToken: process.env.MAIL_TOKEN || "",
+    mailEncription: process.env.MAIL_ENCRYPTION || "",
 };

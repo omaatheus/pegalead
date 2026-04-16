@@ -4,9 +4,9 @@ services:
     container_name: nextjs_postgres
     restart: always
     environment:
-      POSTGRES_USER: 
-      POSTGRES_PASSWORD: 
-      POSTGRES_DB: 
+      POSTGRES_USER: zions
+      POSTGRES_PASSWORD: zions123
+      POSTGRES_DB: leads_zions_db
     ports:
       - "5432:5432"
     volumes:
@@ -28,3 +28,7 @@ services:
 volumes:
   postgres_data:
   grafana_data:
+
+networks:
+  monitoring: 
+    driver: bridge
