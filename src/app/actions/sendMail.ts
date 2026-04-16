@@ -1,7 +1,8 @@
+"use server";
+
 import { LeadFormData } from "@/types";
 import axios from "axios";
 import { env } from "@/config/env";
-import { success } from "zod";
 
 export async function sendMail(data: LeadFormData, password: string) {
   const url = "https://api.mailgrid.net.br/sendmail/";
