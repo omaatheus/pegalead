@@ -61,10 +61,7 @@ export default function AbrintLeadCaptureForm() {
   const [resultado, setResultado] = useState<ApiResponse | null>(null);
   const [errors, setErrors] = useState<FormErrors>({}); 
   const [apiError, setApiError] = useState<string | null>(null);
-  
-  const ABRINT_COMPANY_OPTIONS = [
-    { id: 'telecom', label: 'Telecom' },
-  ]
+
 
   const [formData, setFormData] = useState<ExtendedLeadFormData>({
     name: '',
@@ -332,7 +329,7 @@ export default function AbrintLeadCaptureForm() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
-            {ABRINT_COMPANY_OPTIONS.map((empresa) => (
+            {COMPANY_OPTIONS.map((empresa) => (
               <Checkbox
                 key={empresa.id}
                 name={empresa.id}
