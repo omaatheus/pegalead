@@ -138,7 +138,7 @@ export default function LeadCaptureForm() {
     }, 2000);
   };
 
-  if (resultado?.sucess && resultado.credentials) {
+  if (resultado?.sucess && 'credentials' in resultado) {
     return (
       <div className="flex flex-col items-center justify-center p-4 sm:p-8 w-full bg-emerald-900/10 border border-emerald-500/20 rounded-xl text-center backdrop-blur-sm animate-in fade-in zoom-in duration-500">
         

@@ -46,7 +46,6 @@ export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiRes
           resolve({
             sucess: true,
             message: "Lead da Abrint registrado com sucesso!" 
-
           });
         }, 1500); 
       });

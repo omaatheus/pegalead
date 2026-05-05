@@ -183,7 +183,6 @@ export default function AbrintLeadCaptureForm() {
     }
   };
 
-  // Alteração principal: Tratamento de sucesso voltado apenas para o feedback visual
   if (resultado?.sucess) {
     return (
       <div className="flex flex-col items-center justify-center p-4 sm:p-8 w-full bg-emerald-900/10 border border-emerald-500/20 rounded-xl text-center backdrop-blur-sm animate-in fade-in zoom-in duration-500">
@@ -199,7 +198,9 @@ export default function AbrintLeadCaptureForm() {
         </h2>
         
         <p className="max-w-md mx-auto mb-6 text-sm sm:text-base text-slate-300">
-          {resultado.message || "Seus dados foram enviados com sucesso. Nossa equipe entrará em contato em breve para dar andamento."}
+          {'message' in resultado && resultado.message 
+            ? resultado.message 
+            : "Seus dados foram enviados com sucesso. Nossa equipe entrará em contato em breve para dar andamento."}
         </p>
 
         <div className="mt-4 pt-6 border-t border-emerald-500/20 w-full flex flex-col items-center">
