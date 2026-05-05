@@ -32,6 +32,9 @@ export type LeadMinAggregateOutputType = {
   company: string | null
   segment: string | null
   createdAt: Date | null
+  origin: string | null
+  wants_heimdall: boolean | null
+  wants_zeus_vision: boolean | null
 }
 
 export type LeadMaxAggregateOutputType = {
@@ -42,6 +45,9 @@ export type LeadMaxAggregateOutputType = {
   company: string | null
   segment: string | null
   createdAt: Date | null
+  origin: string | null
+  wants_heimdall: boolean | null
+  wants_zeus_vision: boolean | null
 }
 
 export type LeadCountAggregateOutputType = {
@@ -53,6 +59,9 @@ export type LeadCountAggregateOutputType = {
   segment: number
   selectedAnalytics: number
   createdAt: number
+  origin: number
+  wants_heimdall: number
+  wants_zeus_vision: number
   _all: number
 }
 
@@ -65,6 +74,9 @@ export type LeadMinAggregateInputType = {
   company?: true
   segment?: true
   createdAt?: true
+  origin?: true
+  wants_heimdall?: true
+  wants_zeus_vision?: true
 }
 
 export type LeadMaxAggregateInputType = {
@@ -75,6 +87,9 @@ export type LeadMaxAggregateInputType = {
   company?: true
   segment?: true
   createdAt?: true
+  origin?: true
+  wants_heimdall?: true
+  wants_zeus_vision?: true
 }
 
 export type LeadCountAggregateInputType = {
@@ -86,6 +101,9 @@ export type LeadCountAggregateInputType = {
   segment?: true
   selectedAnalytics?: true
   createdAt?: true
+  origin?: true
+  wants_heimdall?: true
+  wants_zeus_vision?: true
   _all?: true
 }
 
@@ -170,6 +188,9 @@ export type LeadGroupByOutputType = {
   segment: string
   selectedAnalytics: string[]
   createdAt: Date
+  origin: string | null
+  wants_heimdall: boolean | null
+  wants_zeus_vision: boolean | null
   _count: LeadCountAggregateOutputType | null
   _min: LeadMinAggregateOutputType | null
   _max: LeadMaxAggregateOutputType | null
@@ -202,6 +223,9 @@ export type LeadWhereInput = {
   segment?: Prisma.StringFilter<"Lead"> | string
   selectedAnalytics?: Prisma.StringNullableListFilter<"Lead">
   createdAt?: Prisma.DateTimeFilter<"Lead"> | Date | string
+  origin?: Prisma.StringNullableFilter<"Lead"> | string | null
+  wants_heimdall?: Prisma.BoolNullableFilter<"Lead"> | boolean | null
+  wants_zeus_vision?: Prisma.BoolNullableFilter<"Lead"> | boolean | null
 }
 
 export type LeadOrderByWithRelationInput = {
@@ -213,6 +237,9 @@ export type LeadOrderByWithRelationInput = {
   segment?: Prisma.SortOrder
   selectedAnalytics?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  origin?: Prisma.SortOrderInput | Prisma.SortOrder
+  wants_heimdall?: Prisma.SortOrderInput | Prisma.SortOrder
+  wants_zeus_vision?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type LeadWhereUniqueInput = Prisma.AtLeast<{
@@ -227,6 +254,9 @@ export type LeadWhereUniqueInput = Prisma.AtLeast<{
   segment?: Prisma.StringFilter<"Lead"> | string
   selectedAnalytics?: Prisma.StringNullableListFilter<"Lead">
   createdAt?: Prisma.DateTimeFilter<"Lead"> | Date | string
+  origin?: Prisma.StringNullableFilter<"Lead"> | string | null
+  wants_heimdall?: Prisma.BoolNullableFilter<"Lead"> | boolean | null
+  wants_zeus_vision?: Prisma.BoolNullableFilter<"Lead"> | boolean | null
 }, "identifier" | "email">
 
 export type LeadOrderByWithAggregationInput = {
@@ -238,6 +268,9 @@ export type LeadOrderByWithAggregationInput = {
   segment?: Prisma.SortOrder
   selectedAnalytics?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  origin?: Prisma.SortOrderInput | Prisma.SortOrder
+  wants_heimdall?: Prisma.SortOrderInput | Prisma.SortOrder
+  wants_zeus_vision?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.LeadCountOrderByAggregateInput
   _max?: Prisma.LeadMaxOrderByAggregateInput
   _min?: Prisma.LeadMinOrderByAggregateInput
@@ -255,6 +288,9 @@ export type LeadScalarWhereWithAggregatesInput = {
   segment?: Prisma.StringWithAggregatesFilter<"Lead"> | string
   selectedAnalytics?: Prisma.StringNullableListFilter<"Lead">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Lead"> | Date | string
+  origin?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
+  wants_heimdall?: Prisma.BoolNullableWithAggregatesFilter<"Lead"> | boolean | null
+  wants_zeus_vision?: Prisma.BoolNullableWithAggregatesFilter<"Lead"> | boolean | null
 }
 
 export type LeadCreateInput = {
@@ -266,6 +302,9 @@ export type LeadCreateInput = {
   segment: string
   selectedAnalytics?: Prisma.LeadCreateselectedAnalyticsInput | string[]
   createdAt?: Date | string
+  origin?: string | null
+  wants_heimdall?: boolean | null
+  wants_zeus_vision?: boolean | null
 }
 
 export type LeadUncheckedCreateInput = {
@@ -277,6 +316,9 @@ export type LeadUncheckedCreateInput = {
   segment: string
   selectedAnalytics?: Prisma.LeadCreateselectedAnalyticsInput | string[]
   createdAt?: Date | string
+  origin?: string | null
+  wants_heimdall?: boolean | null
+  wants_zeus_vision?: boolean | null
 }
 
 export type LeadUpdateInput = {
@@ -288,6 +330,9 @@ export type LeadUpdateInput = {
   segment?: Prisma.StringFieldUpdateOperationsInput | string
   selectedAnalytics?: Prisma.LeadUpdateselectedAnalyticsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  wants_heimdall?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  wants_zeus_vision?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
 }
 
 export type LeadUncheckedUpdateInput = {
@@ -299,6 +344,9 @@ export type LeadUncheckedUpdateInput = {
   segment?: Prisma.StringFieldUpdateOperationsInput | string
   selectedAnalytics?: Prisma.LeadUpdateselectedAnalyticsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  wants_heimdall?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  wants_zeus_vision?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
 }
 
 export type LeadCreateManyInput = {
@@ -310,6 +358,9 @@ export type LeadCreateManyInput = {
   segment: string
   selectedAnalytics?: Prisma.LeadCreateselectedAnalyticsInput | string[]
   createdAt?: Date | string
+  origin?: string | null
+  wants_heimdall?: boolean | null
+  wants_zeus_vision?: boolean | null
 }
 
 export type LeadUpdateManyMutationInput = {
@@ -321,6 +372,9 @@ export type LeadUpdateManyMutationInput = {
   segment?: Prisma.StringFieldUpdateOperationsInput | string
   selectedAnalytics?: Prisma.LeadUpdateselectedAnalyticsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  wants_heimdall?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  wants_zeus_vision?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
 }
 
 export type LeadUncheckedUpdateManyInput = {
@@ -332,6 +386,9 @@ export type LeadUncheckedUpdateManyInput = {
   segment?: Prisma.StringFieldUpdateOperationsInput | string
   selectedAnalytics?: Prisma.LeadUpdateselectedAnalyticsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  wants_heimdall?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  wants_zeus_vision?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
 }
 
 export type StringNullableListFilter<$PrismaModel = never> = {
@@ -351,6 +408,9 @@ export type LeadCountOrderByAggregateInput = {
   segment?: Prisma.SortOrder
   selectedAnalytics?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  origin?: Prisma.SortOrder
+  wants_heimdall?: Prisma.SortOrder
+  wants_zeus_vision?: Prisma.SortOrder
 }
 
 export type LeadMaxOrderByAggregateInput = {
@@ -361,6 +421,9 @@ export type LeadMaxOrderByAggregateInput = {
   company?: Prisma.SortOrder
   segment?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  origin?: Prisma.SortOrder
+  wants_heimdall?: Prisma.SortOrder
+  wants_zeus_vision?: Prisma.SortOrder
 }
 
 export type LeadMinOrderByAggregateInput = {
@@ -371,6 +434,9 @@ export type LeadMinOrderByAggregateInput = {
   company?: Prisma.SortOrder
   segment?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  origin?: Prisma.SortOrder
+  wants_heimdall?: Prisma.SortOrder
+  wants_zeus_vision?: Prisma.SortOrder
 }
 
 export type LeadCreateselectedAnalyticsInput = {
@@ -390,6 +456,14 @@ export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
+export type NullableBoolFieldUpdateOperationsInput = {
+  set?: boolean | null
+}
+
 
 
 export type LeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -401,6 +475,9 @@ export type LeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   segment?: boolean
   selectedAnalytics?: boolean
   createdAt?: boolean
+  origin?: boolean
+  wants_heimdall?: boolean
+  wants_zeus_vision?: boolean
 }, ExtArgs["result"]["lead"]>
 
 export type LeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -412,6 +489,9 @@ export type LeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   segment?: boolean
   selectedAnalytics?: boolean
   createdAt?: boolean
+  origin?: boolean
+  wants_heimdall?: boolean
+  wants_zeus_vision?: boolean
 }, ExtArgs["result"]["lead"]>
 
 export type LeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -423,6 +503,9 @@ export type LeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   segment?: boolean
   selectedAnalytics?: boolean
   createdAt?: boolean
+  origin?: boolean
+  wants_heimdall?: boolean
+  wants_zeus_vision?: boolean
 }, ExtArgs["result"]["lead"]>
 
 export type LeadSelectScalar = {
@@ -434,9 +517,12 @@ export type LeadSelectScalar = {
   segment?: boolean
   selectedAnalytics?: boolean
   createdAt?: boolean
+  origin?: boolean
+  wants_heimdall?: boolean
+  wants_zeus_vision?: boolean
 }
 
-export type LeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"identifier" | "name" | "email" | "phone" | "company" | "segment" | "selectedAnalytics" | "createdAt", ExtArgs["result"]["lead"]>
+export type LeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"identifier" | "name" | "email" | "phone" | "company" | "segment" | "selectedAnalytics" | "createdAt" | "origin" | "wants_heimdall" | "wants_zeus_vision", ExtArgs["result"]["lead"]>
 
 export type $LeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Lead"
@@ -450,6 +536,9 @@ export type $LeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     segment: string
     selectedAnalytics: string[]
     createdAt: Date
+    origin: string | null
+    wants_heimdall: boolean | null
+    wants_zeus_vision: boolean | null
   }, ExtArgs["result"]["lead"]>
   composites: {}
 }
@@ -881,6 +970,9 @@ export interface LeadFieldRefs {
   readonly segment: Prisma.FieldRef<"Lead", 'String'>
   readonly selectedAnalytics: Prisma.FieldRef<"Lead", 'String[]'>
   readonly createdAt: Prisma.FieldRef<"Lead", 'DateTime'>
+  readonly origin: Prisma.FieldRef<"Lead", 'String'>
+  readonly wants_heimdall: Prisma.FieldRef<"Lead", 'Boolean'>
+  readonly wants_zeus_vision: Prisma.FieldRef<"Lead", 'Boolean'>
 }
     
 

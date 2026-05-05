@@ -78,7 +78,10 @@ export const LeadScalarFieldEnum = {
   company: 'company',
   segment: 'segment',
   selectedAnalytics: 'selectedAnalytics',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  origin: 'origin',
+  wants_heimdall: 'wants_heimdall',
+  wants_zeus_vision: 'wants_zeus_vision'
 } as const
 
 export type LeadScalarFieldEnum = (typeof LeadScalarFieldEnum)[keyof typeof LeadScalarFieldEnum]
@@ -98,4 +101,12 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

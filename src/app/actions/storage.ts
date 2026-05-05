@@ -29,7 +29,10 @@ export async function saveLeadsToStorage(data: LeadFormData) {
                 identifier: data.identifier,
                 company: data.company,
                 segment: company_segment,
-                selectedAnalytics: selectedAnalytics
+                selectedAnalytics: selectedAnalytics,
+                origin: data.origin,
+                wants_heimdall: data.wants_heimdall,
+                wants_zeus_vision: data.wants_zeus_vision
             }
         });
 

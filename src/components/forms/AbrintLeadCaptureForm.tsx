@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 import Link from 'next/link';
 import { ANALYTICS_OPTIONS } from '@/constants/analytics';
-import { GenerateTestAccess } from '@/app/actions/api';
+import { ExtendedLeadData, GenerateTestAccess } from '@/app/actions/api';
 import { LeadFormData, ApiResponse, CompanyData } from '@/types';
 
 import { Input } from '@/components/ui/Input';
@@ -16,26 +16,57 @@ import { SocialButton } from '../ui/SocialButton';
 import { maskCNPJ, maskPhone } from '@/utils/masks';
 import { COMPANY_OPTIONS } from '@/constants/typeCompany';
 
+// 1. Schema atualizado com superRefine para validação condicional
 const leadSchema = z.object({
   name: z.string().min(3, 'O nome completo é obrigatório.'),
   email: z.string().email('Insira um e-mail corporativo válido.'),
   phone: z.string().min(14, 'Insira um telefone válido.'),
   company: z.string().min(2, 'O nome da empresa é obrigatório.'),
   identifier: z.string().length(18, 'Insira um CNPJ válido.'),
-  selectedAnalytics: z.array(z.string()).min(1, 'Selecione pelo menos um analítico para testar.'),
   company_segment: z.string().min(1, 'O segmento da empresa é obrigatório.'),
+  wantsHeimdall: z.boolean(),
+  wantsZeusVision: z.boolean(),
+  selectedAnalytics: z.array(z.string()),
+}).superRefine((data, ctx) => {
+  // Valida se nenhum produto foi selecionado
+  if (!data.wantsHeimdall && !data.wantsZeusVision) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Selecione pelo menos um produto (Heimdall ou Zeus Vision).',
+      path: ['products'], 
+    });
+  }
+  // Valida se Heimdall está selecionado mas não há analíticos
+  if (data.wantsHeimdall && data.selectedAnalytics.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Selecione pelo menos um analítico para testar no Heimdall.',
+      path: ['selectedAnalytics'],
+    });
+  }
 });
 
-type FormErrors = z.inferFlattenedErrors<typeof leadSchema>['fieldErrors'];
+type FormErrors = z.inferFlattenedErrors<typeof leadSchema>['fieldErrors'] & {
+  products?: string[];
+};
 
-export default function LeadCaptureForm() {
+type ExtendedLeadFormData = LeadFormData & {
+  origin: string;
+  wantsHeimdall: boolean;
+  wantsZeusVision: boolean;
+};
+
+export default function AbrintLeadCaptureForm() {
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<ApiResponse | null>(null);
   const [errors, setErrors] = useState<FormErrors>({}); 
   const [apiError, setApiError] = useState<string | null>(null);
-  const [copiedField, setCopiedField] = useState<'user' | 'password' | 'link' | null>(null);
   
-  const [formData, setFormData] = useState<LeadFormData>({
+  const ABRINT_COMPANY_OPTIONS = [
+    { id: 'telecom', label: 'Telecom' },
+  ]
+
+  const [formData, setFormData] = useState<ExtendedLeadFormData>({
     name: '',
     email: '',
     phone: '',
@@ -43,11 +74,13 @@ export default function LeadCaptureForm() {
     identifier: '',
     selectedAnalytics: [],
     company_segment: '',
+    origin: 'abrint_2026',
+    wantsHeimdall: false,
+    wantsZeusVision: false,
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let { value } = e.target;
-    const { name } = e.target;
+    let { name, value } = e.target;
 
     if (name === 'phone') {
         value = maskPhone(value);
@@ -67,6 +100,7 @@ export default function LeadCaptureForm() {
       const newAnalytics = jaSelecionado
         ? prev.selectedAnalytics.filter(item => item !== id)
         : [...prev.selectedAnalytics, id];
+      
       if (newAnalytics.length > 0 && errors.selectedAnalytics) {
         setErrors((prev) => ({ ...prev, selectedAnalytics: undefined }));
       }
@@ -76,17 +110,36 @@ export default function LeadCaptureForm() {
   };
 
   const handleSegmentChange = (id: string) => {
-  setFormData((prev) => {
-    const novoSegmento = prev.company_segment === id ? '' : id;
-    
-    if (novoSegmento && errors.company_segment) {
-      setErrors((prev) => ({ ...prev, company_segment: undefined }));
-    }
+    setFormData((prev) => {
+      const novoSegmento = prev.company_segment === id ? '' : id;
+      
+      if (novoSegmento && errors.company_segment) {
+        setErrors((prev) => ({ ...prev, company_segment: undefined }));
+      }
 
-    return { ...prev, company_segment: novoSegmento };
-  });
-};
+      return { ...prev, company_segment: novoSegmento };
+    });
+  };
 
+  const handleProductChange = (product: 'wantsHeimdall' | 'wantsZeusVision') => {
+    setFormData((prev) => {
+      const newValue = !prev[product];
+      
+      const newAnalytics = (product === 'wantsHeimdall' && !newValue) 
+        ? [] 
+        : prev.selectedAnalytics;
+
+      if (errors.products) {
+        setErrors((prevErrors) => ({ ...prevErrors, products: undefined }));
+      }
+
+      return {
+        ...prev,
+        [product]: newValue,
+        selectedAnalytics: newAnalytics
+      };
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +156,7 @@ export default function LeadCaptureForm() {
     setLoading(true);
 
     try {
-      const resposta = await GenerateTestAccess(result.data as LeadFormData & CompanyData);
+      const resposta = await GenerateTestAccess(result.data as ExtendedLeadData);
       
       if (resposta.sucess) {
         setResultado(resposta);
@@ -130,15 +183,8 @@ export default function LeadCaptureForm() {
     }
   };
 
-  const handleCopy = (text: string, field: 'user' | 'password' | 'link') => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => {
-      setCopiedField(null);
-    }, 2000);
-  };
-
-  if (resultado?.sucess && resultado.credentials) {
+  // Alteração principal: Tratamento de sucesso voltado apenas para o feedback visual
+  if (resultado?.sucess) {
     return (
       <div className="flex flex-col items-center justify-center p-4 sm:p-8 w-full bg-emerald-900/10 border border-emerald-500/20 rounded-xl text-center backdrop-blur-sm animate-in fade-in zoom-in duration-500">
         
@@ -148,79 +194,17 @@ export default function LeadCaptureForm() {
           </svg>
         </div>
 
-        <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-2">Acesso Gerado com Sucesso!</h2>
-        <p className="mb-6 text-sm sm:text-base text-slate-300">
-          Abaixo estão as credenciais para acessar seu ambiente de teste exclusivo. Seu teste terá acesso completo aos analíticos selecionados por 7 dias. Aproveite para explorar e descobrir insights valiosos para o seu negócio!
-        </p>
+        <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-2">
+          Contato Registrado com Sucesso!
+        </h2>
         
-        <div className="bg-[#060d1a]/80 p-4 sm:p-6 rounded-lg border border-slate-700/50 text-left w-full max-w-md shadow-inner">
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-1">
-               <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">Acesse o Link</span>
-            </div>
-            <a href={resultado.credentials.acessLink} target="_blank" className="text-[#FACC15] text-sm sm:text-base font-medium hover:text-yellow-300 hover:underline transition-colors break-all">
-              {resultado.credentials.acessLink}
-            </a>
-          </div>
+        <p className="max-w-md mx-auto mb-6 text-sm sm:text-base text-slate-300">
+          {resultado.message || "Seus dados foram enviados com sucesso. Nossa equipe entrará em contato em breve para dar andamento."}
+        </p>
 
-          <div className="flex flex-col gap-4">
-            <div>
-              <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Usuário</span>
-              <div className="bg-slate-800/50 p-2.5 sm:px-3 sm:py-2.5 rounded border border-slate-700/50 flex items-center justify-between gap-2">
-                <div className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  <strong className="text-slate-100 font-mono text-[13px] sm:text-sm whitespace-nowrap">
-                    {resultado.credentials.user}
-                  </strong>
-                </div>
-                <button 
-                  onClick={() => handleCopy(resultado.credentials.user, 'user')}
-                  className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 rounded-md hover:bg-slate-700/50 shrink-0 cursor-pointer"
-                  title="Copiar usuário"
-                >
-                  {copiedField === 'user' ? (
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <span className="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Senha</span>
-              <div className="bg-slate-800/50 p-2.5 sm:px-3 sm:py-2.5 rounded border border-slate-700/50 flex items-center justify-between gap-2">
-                <div className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  <strong className="text-slate-100 font-mono text-[13px] sm:text-sm whitespace-nowrap">
-                    {resultado.credentials.password}
-                  </strong>
-                </div>
-                <button 
-                  onClick={() => handleCopy(resultado.credentials.password, 'password')}
-                  className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 rounded-md hover:bg-slate-700/50 shrink-0 cursor-pointer"
-                  title="Copiar senha"
-                >
-                  {copiedField === 'password' ? (
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 pt-6 border-t border-emerald-500/20 w-full flex flex-col items-center">
+        <div className="mt-4 pt-6 border-t border-emerald-500/20 w-full flex flex-col items-center">
           <p className="mb-4 text-sm font-medium text-slate-300">
-            Acompanhe a Zions Vision e fique por dentro das últimas inovações:
+            Enquanto isso, acompanhe a Zions Vision:
           </p>
           <div className="flex items-center gap-4">
             <SocialButton ariaLabel='Acessar Instagram' svg={<svg 
@@ -262,10 +246,10 @@ export default function LeadCaptureForm() {
     <>
       <div className="text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-50 mb-4 tracking-tight">
-          Teste Nossa Plataforma
+          Deixe seu contato
         </h1>
         <p className="text-base text-slate-300 leading-relaxed">
-          Preencha os dados abaixo para gerar seu acesso exclusivo e testar nossos analíticos de vídeo na prática.
+          Preencha os dados abaixo e entraremos em contato para apresentar nossas inovações em visão computacional.
         </p>
       </div>
       
@@ -295,7 +279,7 @@ export default function LeadCaptureForm() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
             <Input 
-              label="E-mail de contato" 
+              label="E-mail corporativo" 
               name="email" 
               type="email" 
               value={formData.email} 
@@ -347,7 +331,7 @@ export default function LeadCaptureForm() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
-            {COMPANY_OPTIONS.map((empresa) => (
+            {ABRINT_COMPANY_OPTIONS.map((empresa) => (
               <Checkbox
                 key={empresa.id}
                 name={empresa.id}
@@ -361,34 +345,66 @@ export default function LeadCaptureForm() {
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
-            Analíticos de interesse
+            Produto de interesse
           </h3>
           
-          {errors.selectedAnalytics && (
+          {errors.products && (
             <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 animate-in fade-in">
               <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
-              <p className="text-sm text-red-400 font-medium">{errors.selectedAnalytics[0]}</p>
+              <p className="text-sm text-red-400 font-medium">{errors.products[0]}</p>
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
-            {ANALYTICS_OPTIONS.map((analitico) => (
-              <Checkbox
-                key={analitico.id}
-                name={analitico.id}
-                label={analitico.label}
-                checked={formData.selectedAnalytics.includes(analitico.id)}
-                onChange={() => handleCheckboxChange(analitico.id)}
-              />
-            ))}
+            <Checkbox
+              name="wantsHeimdall"
+              label="Heimdall"
+              checked={formData.wantsHeimdall}
+              onChange={() => handleProductChange('wantsHeimdall')}
+            />
+            <Checkbox
+              name="wantsZeusVision"
+              label="Zeus Vision"
+              checked={formData.wantsZeusVision}
+              onChange={() => handleProductChange('wantsZeusVision')}
+            />
           </div>
+
+          {formData.wantsHeimdall && (
+            <div className="mt-4 p-5 bg-slate-800/30 border border-slate-700/50 rounded-lg animate-in fade-in slide-in-from-top-2">
+              <h4 className="text-sm font-semibold text-slate-200 mb-3">
+                Selecione os analíticos do Heimdall:
+              </h4>
+
+              {errors.selectedAnalytics && (
+                <div className="p-3 mb-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2">
+                  <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <p className="text-sm text-red-400 font-medium">{errors.selectedAnalytics[0]}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4">
+                {ANALYTICS_OPTIONS.map((analitico) => (
+                  <Checkbox
+                    key={analitico.id}
+                    name={analitico.id}
+                    label={analitico.label}
+                    checked={formData.selectedAnalytics.includes(analitico.id)}
+                    onChange={() => handleCheckboxChange(analitico.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="pt-4">
           <Button type="submit" isLoading={loading}>
-            Testar Plataforma Agora
+            Enviar meu contato
           </Button>
         </div>
       </form>

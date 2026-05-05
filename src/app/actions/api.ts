@@ -11,10 +11,46 @@ import { deleteLeadFromStorage, saveLeadsToStorage } from "./storage";
 import { verifyIdentifier } from "@/utils/verifyIdentifier";
 import { sendMail } from "./sendMail";
 
-export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Promise<ApiResponse> => {
-  try {
+export type ExtendedLeadData = CompanyData & LeadFormData & {
+  wantsHeimdall?: boolean;
+  wantsZeusVision?: boolean;
+  origin?: string;
+  wants_heimdall?: boolean;
+  wants_zeus_vision?: boolean;
+};
 
+export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiResponse> => {
+  try {
     verifyIdentifier(data.identifier);
+
+    const isAbrintForm = 'wantsHeimdall' in data;
+
+    const dbPayload = {
+      ...data,
+      origin: isAbrintForm ? 'abrint_2026' : 'site',
+      wants_heimdall: isAbrintForm ? !!data.wantsHeimdall : false,
+      wants_zeus_vision: isAbrintForm ? !!data.wantsZeusVision : false,
+    };
+
+    const savedInStorage = await saveLeadsToStorage(dbPayload);
+
+    if (!savedInStorage.success) {
+      throw new Error("Falha ao salvar lead no banco de dados.");
+    }
+
+
+    if (isAbrintForm) {
+      await addToHopper(dbPayload);
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            sucess: true,
+            message: "Lead da Abrint registrado com sucesso!" 
+
+          });
+        }, 1500); 
+      });
+    }
 
     const password = Math.random().toString(36).slice(-8);
 
@@ -34,12 +70,6 @@ export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Prom
       expired_at: 7
     };
 
-    const savedInStorage = await saveLeadsToStorage(data);
-
-    if(!savedInStorage.success){
-      throw new Error("Falha ao salvar lead no banco de dados.");
-    }
-
     await sendMail(data, password);
 
     const loginResponse = await loginSuperAdmin();
@@ -48,13 +78,13 @@ export const GenerateTestAccess = async (data: CompanyData & LeadFormData): Prom
       throw new Error('Falha ao obter credenciais do super admin');
     }
 
-    let resCreateCompany = await createCompany(companyData, loginResponse.token);
+    const resCreateCompany = await createCompany(companyData, loginResponse.token);
 
     data.company_id = resCreateCompany.data.company_id;
 
     await addAnalytics(data, loginResponse.token);
 
-    await addToHopper(data);
+    await addToHopper(dbPayload);
 
     return new Promise((resolve) => {
       setTimeout(() => {

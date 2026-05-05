@@ -6,9 +6,16 @@ export interface LeadFormData {
   identifier: string;
   selectedAnalytics: string[];
   company_segment: string;
+  origin?: string; 
+  wants_heimdall?: boolean;
+  wants_zeus_vision?: boolean;
 }
 
 export type ApiResponse = 
+  | {
+    sucess: true;
+    message: string;
+  }
   | {
       sucess: true;
       credentials: {

@@ -21,4 +21,7 @@ model Lead {
   segment             String
   selectedAnalytics   String[] 
   createdAt           DateTime @default(now())
+  origin              String?  @default("default") 
+  wants_heimdall      Boolean? @default(false)
+  wants_zeus_vision   Boolean? @default(false)
 }
