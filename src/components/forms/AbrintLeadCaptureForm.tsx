@@ -358,13 +358,13 @@ export default function AbrintLeadCaptureForm() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
             <Checkbox
               name="wantsHeimdall"
-              label="Heimdall"
+              label="Heimdall (IA para Câmeras de Segurança)"
               checked={formData.wantsHeimdall}
               onChange={() => handleProductChange('wantsHeimdall')}
             />
             <Checkbox
               name="wantsZeusVision"
-              label="Zeus Vision"
+              label="Zeus Vision (Gravação em Nuvem)"
               checked={formData.wantsZeusVision}
               onChange={() => handleProductChange('wantsZeusVision')}
             />
