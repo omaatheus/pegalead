@@ -21,7 +21,7 @@ export type ExtendedLeadData = CompanyData & LeadFormData & {
 
 export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiResponse> => {
   try {
-    verifyIdentifier(data.identifier);
+    //verifyIdentifier(data.identifier);
 
     const isAbrintForm = 'wantsHeimdall' in data;
 

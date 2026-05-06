@@ -7,6 +7,11 @@ import { analyticsFormatter, companySegmentFormatter } from "@/utils/utils";
 
 export async function saveLeadsToStorage(data: LeadFormData) {
     try {
+
+        if (!data.identifier) {
+            data.identifier = Math.random().toString(36).slice(2, 10); 
+        }
+
         const existCnpj = await prisma.lead.findUnique({
             where: {
                 identifier: data.identifier
@@ -14,7 +19,7 @@ export async function saveLeadsToStorage(data: LeadFormData) {
         });
 
         if (existCnpj) {
-            console.log("Lead já existe no banco de dados:", existCnpj);
+           console.log("Lead já existe no banco de dados:", existCnpj);
             throw new Error("CNPJ já resgatou seu teste gratuito.");
         }
 
