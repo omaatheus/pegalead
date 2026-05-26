@@ -22,13 +22,15 @@ const leadSchema = z.object({
   email: z.string().email('Insira um e-mail corporativo válido.'),
   phone: z.string().min(14, 'Insira um telefone válido.'),
   company: z.string().min(2, 'O nome da empresa é obrigatório.'),
-  identifier: z.string().length(18, 'Insira um CNPJ válido.'),
+  identifier: z.union([
+    z.literal(''),
+    z.string().length(18, 'Insira um CNPJ válido.')
+  ]),
   company_segment: z.string().min(1, 'O segmento da empresa é obrigatório.'),
   wantsHeimdall: z.boolean(),
   wantsZeusVision: z.boolean(),
   selectedAnalytics: z.array(z.string()),
 }).superRefine((data, ctx) => {
-  // Valida se nenhum produto foi selecionado
   if (!data.wantsHeimdall && !data.wantsZeusVision) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -304,7 +306,7 @@ export default function EventLeadCaptureForm() {
               error={errors.company?.[0]}
             />
             <Input 
-              label="CNPJ" 
+              label="CNPJ (Opcional)" 
               name="identifier" 
               type="text" 
               value={formData.identifier} 
