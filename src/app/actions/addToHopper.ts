@@ -11,10 +11,10 @@ export async function addToHopper(data: LeadFormData) {
     let apiToken: string;
     let columnid: string;
 
-    if (data.origin === "abrint_2026") {
-        apiUrl = env.commandUrlAbrint;
-        apiToken = env.commandTokenAbrint;
-        columnid = env.columnIdAbrint;
+    if (data.origin === "exposec_2026") {
+        apiUrl = env.commandUrlEvent;
+        apiToken = env.commandTokenEvent;
+        columnid = env.columnIdEvent;
     } else {
         apiUrl = env.commandUrl;
         apiToken = env.commandToken;
@@ -23,7 +23,7 @@ export async function addToHopper(data: LeadFormData) {
 
     const selectedAnalytics: string[] = analyticsFormatter(data.selectedAnalytics);
 
-    if (data.origin === "abrint_2026" && data.wants_zeus_vision) {
+    if (data.origin === "exposec_2026" && data.wants_zeus_vision) {
         selectedAnalytics.push("Zeus Vision");
     }
 
@@ -32,7 +32,7 @@ export async function addToHopper(data: LeadFormData) {
     const formData = {
         "columnId": columnid,
         "title": `${data.name} - ${data.company}`,
-        "description": `${data.name} - ${data.company} esse lead foi capturado pelo Formulário da Abrint.`,
+        "description": `${data.name} - ${data.company} esse lead foi capturado pelo Formulário da Exposec.`,
         "fields": {
             "email": `${data.email}`,
             "phone": `${data.phone}`,

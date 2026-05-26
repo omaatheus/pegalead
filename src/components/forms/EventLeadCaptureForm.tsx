@@ -22,10 +22,7 @@ const leadSchema = z.object({
   email: z.string().email('Insira um e-mail corporativo válido.'),
   phone: z.string().min(14, 'Insira um telefone válido.'),
   company: z.string().min(2, 'O nome da empresa é obrigatório.'),
-  identifier: z.union([
-    z.literal(''),
-    z.string().length(18, 'Insira um CNPJ válido.')
-  ]),
+  identifier: z.string().length(18, 'Insira um CNPJ válido.'),
   company_segment: z.string().min(1, 'O segmento da empresa é obrigatório.'),
   wantsHeimdall: z.boolean(),
   wantsZeusVision: z.boolean(),
@@ -59,7 +56,7 @@ type ExtendedLeadFormData = LeadFormData & {
   wantsZeusVision: boolean;
 };
 
-export default function AbrintLeadCaptureForm() {
+export default function EventLeadCaptureForm() {
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<ApiResponse | null>(null);
   const [errors, setErrors] = useState<FormErrors>({}); 
@@ -74,7 +71,7 @@ export default function AbrintLeadCaptureForm() {
     identifier: '',
     selectedAnalytics: [],
     company_segment: '',
-    origin: 'abrint_2026',
+    origin: 'exposec_2026',
     wantsHeimdall: false,
     wantsZeusVision: false,
   });

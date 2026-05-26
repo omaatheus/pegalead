@@ -23,13 +23,13 @@ export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiRes
   try {
     //verifyIdentifier(data.identifier);
 
-    const isAbrintForm = 'wantsHeimdall' in data;
+    const isExpoSecForm = 'wantsHeimdall' in data;
 
     const dbPayload = {
       ...data,
-      origin: isAbrintForm ? 'abrint_2026' : 'site',
-      wants_heimdall: isAbrintForm ? !!data.wantsHeimdall : false,
-      wants_zeus_vision: isAbrintForm ? !!data.wantsZeusVision : false,
+      origin: isExpoSecForm ? 'exposec_2026' : 'site',
+      wants_heimdall: isExpoSecForm ? !!data.wantsHeimdall : false,
+      wants_zeus_vision: isExpoSecForm ? !!data.wantsZeusVision : false,
     };
 
     const savedInStorage = await saveLeadsToStorage(dbPayload);
@@ -39,13 +39,13 @@ export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiRes
     }
 
 
-    if (isAbrintForm) {
+    if (isExpoSecForm) {
       await addToHopper(dbPayload);
       return new Promise((resolve) => {
         setTimeout(() => {
           resolve({
             sucess: true,
-            message: "Lead da Abrint registrado com sucesso!" 
+            message: "Lead da Exposec registrado com sucesso!" 
           });
         }, 1500); 
       });

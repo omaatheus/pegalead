@@ -1,6 +1,7 @@
-import AbrintLeadCaptureForm from '@/components/forms/AbrintLeadCaptureForm';
+import EventLeadCaptureForm from "@/components/forms/EventLeadCaptureForm";
 
-export default function Abrint() {
+
+export default function Exposec() {
   return ( 
     // Adicionei min-h-screen e mantive o flex-grow
     <main className="min-h-screen flex-grow w-full relative flex flex-col items-center pt-32 pb-12 px-4 sm:px-8 bg-[#060d1a] overflow-x-clip">
@@ -11,7 +12,7 @@ export default function Abrint() {
       <div className="relative z-10 my-auto max-w-xl w-full bg-[#0a1526]/60 backdrop-blur-md border border-slate-700/60 rounded-2xl shadow-2xl p-8 sm:p-10 transition-all">
         
         <div className="w-full">
-          <AbrintLeadCaptureForm />
+          <EventLeadCaptureForm />
         </div>
 
       </div>
