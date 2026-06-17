@@ -39,12 +39,6 @@ export function Header() {
               <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#FACC15] transform scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100" />
             </Link>
 
-            <Link href="/exposec" className="group relative py-2">
-              <span className="text-sm font-semibold tracking-wide text-slate-300 group-hover:text-slate-50 transition-colors duration-300">
-                Exposec
-              </span>
-              <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#FACC15] transform scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100" />
-            </Link>
 
             <Link 
               href="/contact" 
@@ -85,13 +79,6 @@ export function Header() {
             Sobre a Zions
           </Link>
           
-          <Link 
-            href="/exposec" 
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-[#FACC15] hover:bg-slate-800/50 transition-colors"
-          >
-            Exposec
-          </Link>
           <Link 
             href="/contact" 
             onClick={() => setIsMobileMenuOpen(false)}

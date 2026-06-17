@@ -21,13 +21,13 @@ export type ExtendedLeadData = CompanyData & LeadFormData & {
 
 export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiResponse> => {
   try {
-    //verifyIdentifier(data.identifier);
+    verifyIdentifier(data.identifier);
 
     const isExpoSecForm = 'wantsHeimdall' in data;
 
     const dbPayload = {
       ...data,
-      origin: isExpoSecForm ? 'exposec_2026' : 'site',
+      origin: isExpoSecForm ? 'exposec_2026' : 'cftv_ip_2026',
       wants_heimdall: isExpoSecForm ? !!data.wantsHeimdall : false,
       wants_zeus_vision: isExpoSecForm ? !!data.wantsZeusVision : false,
     };
@@ -67,6 +67,7 @@ export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiRes
       status: "activated",
       timezone: "America/Sao_Paulo",
       expired_at: 7
+      
     };
 
     await sendMail(data, password);
