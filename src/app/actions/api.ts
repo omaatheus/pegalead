@@ -27,7 +27,7 @@ export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiRes
 
     const dbPayload = {
       ...data,
-      origin: isExpoSecForm ? 'exposec_2026' : 'cftv_ip_2026',
+      origin: isExpoSecForm ? 'exposec_2026' : 'site',
       wants_heimdall: isExpoSecForm ? !!data.wantsHeimdall : false,
       wants_zeus_vision: isExpoSecForm ? !!data.wantsZeusVision : false,
     };
