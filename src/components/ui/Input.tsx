@@ -8,6 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, id, className, error, ...props }, ref) => {
     const inputId = id || props.name;
+    const errorId = error && inputId ? `${inputId}-error` : undefined;
 
     return (
       <div className="flex flex-col gap-1.5 w-full group">
@@ -24,6 +25,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={errorId}
             className={`
               w-full 
               bg-[#0a1526]/80 backdrop-blur-sm 
@@ -42,7 +45,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
         
         {error && (
-          <span className="text-xs text-red-400 mt-0.5 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+          <span id={errorId} role="alert" className="text-xs text-red-400 mt-0.5 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
