@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { z } from 'zod';
-import Link from 'next/link';
-import { ANALYTICS_OPTIONS } from '@/constants/analytics';
+import { ArrowLeft, ArrowRight, Cable, Building2, Network, Radio, ShieldCheck } from 'lucide-react';
 import { GenerateTestAccess } from '@/app/actions/api';
 import { LeadFormData, ApiResponse, CompanyData } from '@/types';
 
 import { Input } from '@/components/ui/Input';
-import { Checkbox } from '@/components/ui/Checkbox';
+import { ChoiceCard } from '@/components/ui/ChoiceCard';
+import { Stepper } from '@/components/ui/Stepper';
+import { getAnalyticsGroups } from '@/constants/analyticsGroups';
 import { Button } from '@/components/ui/Button';
 
 import { getTranslatedFieldError } from '@/utils/errorMapper';
@@ -28,11 +29,39 @@ const leadSchema = z.object({
 
 type FormErrors = z.inferFlattenedErrors<typeof leadSchema>['fieldErrors'];
 
+const STEP_TITLES = ['Seus dados', 'Personalize seu teste'];
+
+const stepOneSchema = leadSchema.pick({
+  name: true,
+  email: true,
+  phone: true,
+  company: true,
+  identifier: true,
+});
+
+const STEP_ONE_FIELDS = ['name', 'email', 'phone', 'company', 'identifier'] as const;
+
+// Ícones puramente visuais, indexados pelos IDs originais de COMPANY_OPTIONS.
+const SEGMENT_ICONS: Record<string, React.ReactNode> = {
+  monitoring_center: <Radio className="h-5 w-5" />,
+  telecom: <Network className="h-5 w-5" />,
+  cftv_installation: <Cable className="h-5 w-5" />,
+  security_company: <ShieldCheck className="h-5 w-5" />,
+  facilities_and_concierge: <Building2 className="h-5 w-5" />,
+};
+
+const ANALYTICS_GROUPS = getAnalyticsGroups();
+
 export default function LeadCaptureForm() {
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<ApiResponse | null>(null);
   const [errors, setErrors] = useState<FormErrors>({}); 
   const [apiError, setApiError] = useState<string | null>(null);
+  const [step, setStep] = useState<0 | 1>(0);
+  const [announcement, setAnnouncement] = useState('');
+  const submittingRef = useRef(false);
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
+  const uid = useId();
   const [copiedField, setCopiedField] = useState<'user' | 'password' | 'link' | null>(null);
   
   const [formData, setFormData] = useState<LeadFormData>({
@@ -88,45 +117,104 @@ export default function LeadCaptureForm() {
 };
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const result = leadSchema.safeParse(formData);
-    
+  const focusFirstInvalid = (ids: string[]) => {
+    requestAnimationFrame(() => {
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.focus();
+          return;
+        }
+      }
+    });
+  };
+
+  const goToStep = (target: 0 | 1) => {
+    setStep(target);
+    setAnnouncement(`Etapa ${target + 1} de ${STEP_TITLES.length}: ${STEP_TITLES[target]}`);
+    requestAnimationFrame(() => stepHeadingRef.current?.focus());
+  };
+
+  const handleNext = () => {
+    const result = stepOneSchema.safeParse(formData);
     if (!result.success) {
-      setErrors(result.error.flatten().fieldErrors);
-      return; 
+      const fieldErrors = result.error.flatten().fieldErrors;
+      setErrors(fieldErrors);
+      focusFirstInvalid(STEP_ONE_FIELDS.filter((f) => fieldErrors[f]));
+      return;
+    }
+    setErrors({});
+    goToStep(1);
+  };
+
+  const submitToServer = async () => {
+    const result = leadSchema.safeParse(formData);
+
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+      setErrors(fieldErrors);
+      if (STEP_ONE_FIELDS.some((f) => fieldErrors[f])) {
+        goToStep(0);
+        focusFirstInvalid(STEP_ONE_FIELDS.filter((f) => fieldErrors[f]));
+      } else {
+        focusFirstInvalid([
+          fieldErrors.company_segment ? `${uid}-segment` : '',
+          fieldErrors.selectedAnalytics ? `${uid}-analytics` : '',
+        ].filter(Boolean));
+      }
+      return;
     }
 
     setErrors({});
-    setApiError(null); 
+    setApiError(null);
     setLoading(true);
 
     try {
       const resposta = await GenerateTestAccess(result.data as LeadFormData & CompanyData);
-      
+
       if (resposta.sucess) {
         setResultado(resposta);
       } else {
         if (resposta.isApiValidationError) {
           const apiErrors = resposta.fields;
-          
+
           setErrors({
             email: getTranslatedFieldError(apiErrors.email),
             company: getTranslatedFieldError(apiErrors.company_name),
-            identifier: getTranslatedFieldError(apiErrors.identifier) || getTranslatedFieldError(apiErrors.company_name), 
+            identifier: getTranslatedFieldError(apiErrors.identifier) || getTranslatedFieldError(apiErrors.company_name),
             phone: getTranslatedFieldError(apiErrors.phone) || getTranslatedFieldError(apiErrors.company_phone),
             name: getTranslatedFieldError(apiErrors.name),
           });
+          // Os campos com erro da API estão na etapa 1.
+          goToStep(0);
         } else {
           setApiError(resposta.message || "Não foi possível processar sua solicitação no momento.");
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao gerar acesso", error);
       setApiError("Erro de comunicação com o servidor. Verifique sua conexão.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Enter dentro de um campo da etapa 1 apenas avança; nunca chama o servidor.
+    if (step === 0) {
+      handleNext();
+      return;
+    }
+
+    // Proteção contra double-submit (clique duplo / Enter repetido).
+    if (submittingRef.current || loading) return;
+    submittingRef.current = true;
+    try {
+      await submitToServer();
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -258,138 +346,158 @@ export default function LeadCaptureForm() {
     );
   }
 
+  const segmentErrorId = errors.company_segment ? `${uid}-segment-error` : undefined;
+  const analyticsErrorId = errors.selectedAnalytics ? `${uid}-analytics-error` : undefined;
+
   return (
     <>
-      <div className="text-center mb-8">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-50 mb-4 tracking-tight">
-          Teste Nossa Plataforma
-        </h1>
-        <p className="text-base text-slate-300 leading-relaxed">
-          Preencha os dados abaixo para gerar seu acesso exclusivo e testar nossos analíticos de vídeo na prática.
-        </p>
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
       </div>
-      
-      <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full mx-auto" noValidate>
+
+      <div className="mb-6">
+        <Stepper steps={STEP_TITLES} current={step} />
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full mx-auto" noValidate>
         {apiError && (
-          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 animate-in fade-in">
-            <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div role="alert" className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3">
+            <svg aria-hidden="true" className="w-5 h-5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-sm text-red-400 font-medium">{apiError}</p>
           </div>
         )}
-        
-        <div className="space-y-5">
-          <h2 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
-            Insira seus dados
+
+        {/* Etapa 1 — permanece montada (apenas oculta) para preservar o estado dos campos. */}
+        <section hidden={step !== 0} aria-labelledby={`${uid}-step-1`} className="space-y-5">
+          <h2
+            id={`${uid}-step-1`}
+            ref={step === 0 ? stepHeadingRef : undefined}
+            tabIndex={-1}
+            className="text-lg font-semibold text-slate-100 tracking-wide focus:outline-none"
+          >
+            Seus dados
           </h2>
-          
-          <Input 
-            label="Nome completo" 
-            name="name" 
-            type="text" 
-            value={formData.name} 
-            onChange={handleInputChange} 
-            error={errors.name?.[0]} 
-          />
-          
+
+          <Input label="Nome completo" name="name" type="text" autoComplete="name" value={formData.name} onChange={handleInputChange} error={errors.name?.[0]} />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
-            <Input 
-              label="E-mail de contato" 
-              name="email" 
-              type="email" 
-              value={formData.email} 
-              onChange={handleInputChange} 
-              error={errors.email?.[0]}
-            />
-            <Input 
-              label="Telefone / WhatsApp" 
-              name="phone" 
-              type="tel" 
-              value={formData.phone} 
-              onChange={handleInputChange} 
-              error={errors.phone?.[0]}
-            />
+            <Input label="E-mail de contato" name="email" type="email" autoComplete="email" value={formData.email} onChange={handleInputChange} error={errors.email?.[0]} />
+            <Input label="Telefone / WhatsApp" name="phone" type="tel" autoComplete="tel-national" inputMode="tel" value={formData.phone} onChange={handleInputChange} error={errors.phone?.[0]} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
-            <Input 
-              label="Empresa" 
-              name="company" 
-              type="text" 
-              value={formData.company} 
-              onChange={handleInputChange} 
-              error={errors.company?.[0]}
-            />
-            <Input 
-              label="CNPJ" 
-              name="identifier" 
-              type="text" 
-              value={formData.identifier} 
-              onChange={handleInputChange} 
-              error={errors.identifier?.[0]}
-            />
+            <Input label="Empresa" name="company" type="text" autoComplete="organization" value={formData.company} onChange={handleInputChange} error={errors.company?.[0]} />
+            <Input label="CNPJ" name="identifier" type="text" inputMode="numeric" value={formData.identifier} onChange={handleInputChange} error={errors.identifier?.[0]} />
           </div>
-        </div>
+        </section>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
-            Segmento da Empresa
-          </h3>
-          
-          {errors.company_segment && (
-            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 animate-in fade-in">
-              <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <p className="text-sm text-red-400 font-medium">{errors.company_segment}</p>
+        {/* Etapa 2 */}
+        <section hidden={step !== 1} aria-labelledby={`${uid}-step-2`} className="space-y-7">
+          <h2
+            id={`${uid}-step-2`}
+            ref={step === 1 ? stepHeadingRef : undefined}
+            tabIndex={-1}
+            className="text-lg font-semibold text-slate-100 tracking-wide focus:outline-none"
+          >
+            Personalize seu teste
+          </h2>
+
+          <fieldset
+            id={`${uid}-segment`}
+            tabIndex={-1}
+            aria-describedby={segmentErrorId}
+            aria-invalid={errors.company_segment ? true : undefined}
+            className="space-y-3 focus:outline-none"
+          >
+            <legend className="text-sm font-semibold text-slate-200 mb-3">Segmento da empresa</legend>
+            {errors.company_segment && (
+              <p id={segmentErrorId} role="alert" className="text-sm text-red-400 font-medium">
+                {errors.company_segment[0]}
+              </p>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {COMPANY_OPTIONS.map((empresa) => (
+                <ChoiceCard
+                  key={empresa.id}
+                  type="radio"
+                  name="company_segment"
+                  value={empresa.id}
+                  id={`${uid}-segment-${empresa.id}`}
+                  title={empresa.label}
+                  icon={SEGMENT_ICONS[empresa.id]}
+                  checked={formData.company_segment === empresa.id}
+                  onChange={() => handleSegmentChange(empresa.id)}
+                />
+              ))}
             </div>
+          </fieldset>
+
+          <fieldset
+            id={`${uid}-analytics`}
+            tabIndex={-1}
+            aria-describedby={analyticsErrorId}
+            aria-invalid={errors.selectedAnalytics ? true : undefined}
+            className="space-y-4 focus:outline-none"
+          >
+            <legend className="text-sm font-semibold text-slate-200 mb-1">
+              Analíticos de interesse
+              <span className="ml-2 text-xs font-normal text-slate-400">
+                {formData.selectedAnalytics.length} selecionado{formData.selectedAnalytics.length === 1 ? '' : 's'}
+              </span>
+            </legend>
+            <p className="text-xs text-slate-400">Escolha pelo menos um analítico para testar.</p>
+            {errors.selectedAnalytics && (
+              <p id={analyticsErrorId} role="alert" className="text-sm text-red-400 font-medium">
+                {errors.selectedAnalytics[0]}
+              </p>
+            )}
+
+            {ANALYTICS_GROUPS.map((group) => (
+              <div key={group.title} role="group" aria-label={group.title} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{group.title}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {group.options.map((analitico) => (
+                    <ChoiceCard
+                      key={analitico.id}
+                      type="checkbox"
+                      name="selectedAnalytics"
+                      value={analitico.id}
+                      id={`${uid}-analytic-${analitico.id}`}
+                      title={analitico.label}
+                      checked={formData.selectedAnalytics.includes(analitico.id)}
+                      onChange={() => handleCheckboxChange(analitico.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </fieldset>
+        </section>
+
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+          {step === 1 && (
+            <button
+              type="button"
+              onClick={() => goToStep(0)}
+              disabled={loading}
+              className="cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-slate-600 px-6 py-3 text-base font-medium text-slate-200 transition-colors hover:border-slate-400 hover:bg-slate-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FACC15]/70 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+            >
+              <ArrowLeft aria-hidden="true" className="h-5 w-5" />
+              Voltar
+            </button>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
-            {COMPANY_OPTIONS.map((empresa) => (
-              <Checkbox
-                key={empresa.id}
-                name={empresa.id}
-                label={empresa.label}
-                checked={formData.company_segment === empresa.id}
-                onChange={() => handleSegmentChange(empresa.id)} 
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-slate-100 border-b border-slate-700/50 pb-2 tracking-wide">
-            Analíticos de interesse
-          </h3>
-          
-          {errors.selectedAnalytics && (
-            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 animate-in fade-in">
-              <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <p className="text-sm text-red-400 font-medium">{errors.selectedAnalytics[0]}</p>
-            </div>
+          {step === 0 ? (
+            <Button type="button" onClick={handleNext} icon={<ArrowRight className="h-5 w-5" />} className="mt-0! flex-1 focus-visible:ring-2 focus-visible:ring-[#FACC15]/70 focus-visible:outline-none">
+              Continuar
+            </Button>
+          ) : (
+            <Button type="submit" isLoading={loading} className="mt-0! flex-1 focus-visible:ring-2 focus-visible:ring-[#FACC15]/70 focus-visible:outline-none">
+              Gerar acesso
+            </Button>
           )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-4 pt-2">
-            {ANALYTICS_OPTIONS.map((analitico) => (
-              <Checkbox
-                key={analitico.id}
-                name={analitico.id}
-                label={analitico.label}
-                checked={formData.selectedAnalytics.includes(analitico.id)}
-                onChange={() => handleCheckboxChange(analitico.id)}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="pt-4">
-          <Button type="submit" isLoading={loading}>
-            Testar Plataforma Agora
-          </Button>
         </div>
       </form>
     </>
