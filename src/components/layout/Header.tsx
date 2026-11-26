@@ -39,7 +39,6 @@ export function Header() {
               <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#FACC15] transform scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100" />
             </Link>
 
-
             <Link 
               href="/contact" 
               className="text-sm font-semibold tracking-wide text-slate-50 border border-slate-700/80 bg-slate-800/50 hover:bg-slate-700/50 hover:border-slate-500 px-5 py-2.5 rounded-lg transition-all duration-300 shadow-sm hover:shadow-[0_0_15px_rgba(250,204,21,0.1)]"
