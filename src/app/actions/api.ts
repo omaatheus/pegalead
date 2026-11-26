@@ -21,7 +21,7 @@ export type ExtendedLeadData = CompanyData & LeadFormData & {
 
 export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiResponse> => {
   try {
-    //verifyIdentifier(data.identifier);
+    verifyIdentifier(data.identifier);
 
     const isExpoSecForm = 'wantsHeimdall' in data;
 
@@ -67,6 +67,7 @@ export const GenerateTestAccess = async (data: ExtendedLeadData): Promise<ApiRes
       status: "activated",
       timezone: "America/Sao_Paulo",
       expired_at: 7
+      
     };
 
     await sendMail(data, password);

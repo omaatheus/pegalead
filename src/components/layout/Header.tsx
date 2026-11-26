@@ -79,13 +79,6 @@ export function Header() {
           </Link>
           
           <Link 
-            href="/exposec" 
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-[#FACC15] hover:bg-slate-800/50 transition-colors"
-          >
-            Exposec
-          </Link>
-          <Link 
             href="/contact" 
             onClick={() => setIsMobileMenuOpen(false)}
             className="block px-4 py-3 rounded-lg text-base font-medium text-[#FACC15] hover:bg-[#FACC15]/10 transition-colors"
