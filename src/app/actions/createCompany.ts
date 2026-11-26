@@ -7,7 +7,7 @@ import { env } from "@/config/env";
 export async function createCompany(companyData: CompanyData, token: string) {
 
     const apiUrl = `https://${env.heimdallSubdomain}.heimdallcloud.com.br/api/store_company_user`;
-    const appUrl = `${env.heimdallSubdomain}.heimdallcloud.com.br`;
+    const appUrl = `https://${env.heimdallSubdomain}.heimdallcloud.com.br`;
 
     try {
         
