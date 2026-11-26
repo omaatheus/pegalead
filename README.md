@@ -110,13 +110,13 @@ Crie um arquivo `.env.local` na raiz do projeto com as variáveis necessárias:
 DATABASE_URL="postgresql://user:password@ip:port/database?schema=public"
 
 # Heimdall API
-NEXT_PUBLIC_HEIMDALL_SUBDOMAIN="neuralseg"
-NEXT_PUBLIC_SUPERADMIN_USER="User"
-NEXT_PUBLIC_SUPERADMIN_PASSWORD="Password"
+HEIMDALL_SUBDOMAIN="neuralseg"
+SUPERADMIN_USER="User"
+SUPERADMIN_PASSWORD="Password"
 
 # CRM Command
-NEXT_PUBLIC_COMMAND_TOKEN="token"
-NEXT_PUBLIC_COMMAND_URL="https://api.usecommand.io/api/kanban/boards/{board-id-hopper}/cards/webhook"
+COMMAND_TOKEN="token"
+COMMAND_URL="https://api.usecommand.io/api/kanban/boards/{board-id-hopper}/cards/webhook"
 
 ```
 
